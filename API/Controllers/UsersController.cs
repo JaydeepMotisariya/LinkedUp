@@ -12,7 +12,6 @@ using AutoMapper;
 
 namespace API.Controllers
 {
-
     [Authorize]
     public class UsersController : BaseApiController
     {
