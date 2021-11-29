@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.DTO;
 using API.Entities;
+using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
@@ -87,7 +88,34 @@ namespace API.Data
 
         }
 
-        public async Task<IEnumerable<MessageDto>> GetMessageThread(string currentUsername, 
+        // public async Task<IEnumerable<MessageDto>> GetMessageThread(string currentUsername, 
+        //     string recipientUsername)
+        // {
+        //     var messages = await _context.Messages
+        //         .Where(m => m.Recipient.UserName == currentUsername && m.RecipientDeleted == false
+        //                 && m.Sender.UserName == recipientUsername
+        //                 || m.Recipient.UserName == recipientUsername
+        //                 && m.Sender.UserName == currentUsername && m.SenderDeleted == false
+        //         )
+        //         .OrderBy(m => m.MessageSent)
+        //         .ProjectTo<MessageDto>(_mapper.ConfigurationProvider)
+        //         .ToListAsync();
+
+        //     var unreadMessages = messages.Where(m => m.DateRead == null 
+        //         && m.RecipientUsername== currentUsername).ToList();
+
+        //     if (unreadMessages.Any())
+        //     {
+        //         foreach (var message in unreadMessages)
+        //         {
+        //             message.DateRead = DateTime.UtcNow;
+        //         }
+        //     }
+
+        //     return messages;
+        // }
+
+         public async Task<IEnumerable<MessageDto>> GetMessageThread(string currentUsername,
             string recipientUsername)
         {
             var messages = await _context.Messages
@@ -96,21 +124,11 @@ namespace API.Data
                         || m.Recipient.UserName == recipientUsername
                         && m.Sender.UserName == currentUsername && m.SenderDeleted == false
                 )
+                .MarkUnreadAsRead(currentUsername)
                 .OrderBy(m => m.MessageSent)
                 .ProjectTo<MessageDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();
-
-            var unreadMessages = messages.Where(m => m.DateRead == null 
-                && m.RecipientUsername== currentUsername).ToList();
-
-            if (unreadMessages.Any())
-            {
-                foreach (var message in unreadMessages)
-                {
-                    message.DateRead = DateTime.UtcNow;
-                }
-            }
-
+ 
             return messages;
         }
 

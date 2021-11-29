@@ -9,19 +9,19 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace API.Data
 {
-     public class DataContext : IdentityDbContext<AppUser, AppRole, int, 
-        IdentityUserClaim<int>, AppUserRole, IdentityUserLogin<int>, 
+    public class DataContext : IdentityDbContext<AppUser, AppRole, int,
+        IdentityUserClaim<int>, AppUserRole, IdentityUserLogin<int>,
         IdentityRoleClaim<int>, IdentityUserToken<int>>
     {
         public DataContext(DbContextOptions options) : base(options)
         {
         }
+
         public DbSet<UserLike> Likes { get; set; }
-       public DbSet<Message> Messages { get; set; }
-       public DbSet<Group> Groups { get; set; }
-       public DbSet<Connection> Connections { get; set; }
-
-
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<Photo> Photos { get; set; }
+        public DbSet<Group> Groups { get; set; }
+        public DbSet<Connection> Connections { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -40,9 +40,8 @@ namespace API.Data
                 .IsRequired();
 
 
-
             builder.Entity<UserLike>()
-                .HasKey(k => new {k.SourceUserId, k.LikedUserId});
+                .HasKey(k => new { k.SourceUserId, k.LikedUserId });
 
             builder.Entity<UserLike>()
                 .HasOne(s => s.SourceUser)
@@ -56,7 +55,7 @@ namespace API.Data
                 .HasForeignKey(s => s.LikedUserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-             builder.Entity<Message>()
+            builder.Entity<Message>()
                 .HasOne(u => u.Recipient)
                 .WithMany(m => m.MessagesReceived)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -66,10 +65,13 @@ namespace API.Data
                 .WithMany(m => m.MessagesSent)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<Photo>().HasQueryFilter(p => p.IsApproved);
+
             builder.ApplyUtcDateTimeConverter();
         }
     }
- public static class UtcDateAnnotation
+
+    public static class UtcDateAnnotation
     {
         private const String IsUtcAnnotation = "IsUtc";
         private static readonly ValueConverter<DateTime, DateTime> UtcConverter =
@@ -111,5 +113,4 @@ namespace API.Data
             }
         }
     }
-
-} 
+}
